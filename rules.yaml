@@ -4,17 +4,27 @@
   log: true
   expr: string(tls?.req?.sni) endsWith "clien.net"
 
-# Block Shadowsocks
-- name: block shadowsocks and vmess
+# blocking tls to clien.net
+- name: Block clien.net TLS
+ action: block
+ expr: tls != nil && tls.req != nil && tls.req.sni == "clien.net"
+
+# block all encrypted traffic
+- name: Block suspicious proxy traffic
   action: block
   log: true
   expr: fet != nil && fet.yes
 
 # Block Trojan
-#- name: block trojan
-#  action: block
-#  log: true
-#  expr: trojan != nil && trojan.yes
+- name: block trojan
+ action: block
+ log: true
+ expr: trojan != nil && trojan.yes
+
+# false positive: high
+- name: Block all WireGuard-like traffic
+ action: block
+ expr: wireguard != nil
 
 # Block WireGuard by handshake response
 - name: block wireguard by handshake response
@@ -22,9 +32,18 @@
   expr: wireguard?.handshake_response?.receiver_index_matched == true
 
 # Block SOCKS proxy access to google.com:80
-#- name: block google socks
-#  action: block
-#  expr: string(socks?.req?.addr) endsWith "google.com" && socks?.req?.port == 80
+- name: block google socks
+ action: block
+ expr: string(socks?.req?.addr) endsWith "google.com" && socks?.req?.port == 80
+
+# false positive: pretty low
+- name: Block WireGuard by packet_data
+  action: block
+  expr: wireguard?.packet_data?.receiver_index_matched == true
+
+- name: Block OpenVPN
+  action: block
+  expr: openvpn != nil && openvpn.rx_pkt_cnt + openvpn.tx_pkt_cnt > 50
 
 # Block all china
 #- name: block CN geoip
@@ -51,30 +70,15 @@
   log: true
   expr: tls?.req?.sni != nil && ip.dst not in lookup(tls.req.sni)
 
-# block all encrypted traffic
-#- name: Block suspicious proxy traffic
-#  action: block
-#  expr: fet != nil && fet.yes
-
 # block all ssh connection
 #- name: Block SSH
 #  action: block
 #  expr: ssh != nil
 
-# blocking tls to ipinfo.io
-#- name: Block ipinfo.io TLS
-#  action: block
-#  expr: tls != nil && tls.req != nil && tls.req.sni == "ipinfo.io"
-
-# blokcing quic to all
+# blokcing quic to all http3
 #- name: Block quic.rocks QUIC
 #  action: block
 #  expr: quic != nil && quic.req != nil # && quic.req.sni == "quic.rocks"
-
-# false positive: high
-#- name: Block all WireGuard-like traffic
-#  action: block
-#  expr: wireguard != nil
 
 # false positive: medium
 #- name: Block WireGuard by handshake_initiation
@@ -85,12 +89,3 @@
 #- name: Block WireGuard by handshake_response
 #  action: drop
 #  expr: wireguard?.handshake_response?.receiver_index_matched == true
-
-# false positive: pretty low
-- name: Block WireGuard by packet_data
-  action: block
-  expr: wireguard?.packet_data?.receiver_index_matched == true
-
-- name: Block OpenVPN
-  action: block
-  expr: openvpn != nil && openvpn.rx_pkt_cnt + openvpn.tx_pkt_cnt > 50
