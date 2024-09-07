@@ -6,8 +6,8 @@
 
 # blocking tls to clien.net
 - name: Block clien.net TLS
- action: block
- expr: tls != nil && tls.req != nil && tls.req.sni == "clien.net"
+  action: block
+  expr: tls != nil && tls.req != nil && tls.req.sni == "clien.net"
 
 # block all encrypted traffic
 - name: Block suspicious proxy traffic
@@ -17,14 +17,14 @@
 
 # Block Trojan
 - name: block trojan
- action: block
- log: true
- expr: trojan != nil && trojan.yes
+  action: block
+  log: true
+  expr: trojan != nil && trojan.yes
 
 # false positive: high
 - name: Block all WireGuard-like traffic
- action: block
- expr: wireguard != nil
+  action: block
+  expr: wireguard != nil
 
 # Block WireGuard by handshake response
 - name: block wireguard by handshake response
@@ -33,8 +33,8 @@
 
 # Block SOCKS proxy access to google.com:80
 - name: block google socks
- action: block
- expr: string(socks?.req?.addr) endsWith "google.com" && socks?.req?.port == 80
+  action: block
+  expr: string(socks?.req?.addr) endsWith "google.com" && socks?.req?.port == 80
 
 # false positive: pretty low
 - name: Block WireGuard by packet_data
