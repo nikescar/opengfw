@@ -1,8 +1,8 @@
-# Block dns endswith v2ex.com
-- name: block v2ex https
+# Block dns endswith clien.net
+- name: block clien.net https
   action: block
   log: true
-  expr: string(tls?.req?.sni) endsWith "v2ex.com"
+  expr: string(tls?.req?.sni) endsWith "clien.net"
 
 # Block Shadowsocks
 - name: block shadowsocks and vmess
@@ -57,9 +57,9 @@
 #  expr: fet != nil && fet.yes
 
 # block all ssh connection
-- name: Block SSH
-  action: block
-  expr: ssh != nil
+#- name: Block SSH
+#  action: block
+#  expr: ssh != nil
 
 # blocking tls to ipinfo.io
 #- name: Block ipinfo.io TLS
