@@ -71,9 +71,9 @@
   expr: tls?.req?.sni != nil && ip.dst not in lookup(tls.req.sni)
 
 # block all ssh connection
-#- name: Block SSH
-#  action: block
-#  expr: ssh != nil
+- name: Block SSH
+  action: block
+  expr: ssh != nil
 
 # blokcing quic to all http3
 #- name: Block quic.rocks QUIC
