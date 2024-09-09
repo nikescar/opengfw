@@ -1,3 +1,6 @@
+#
+# >>> block by domain, ip
+#
 # Block dns endswith clien.net
 - name: block clien.net https
   action: block
@@ -9,6 +12,36 @@
   action: block
   expr: tls != nil && tls.req != nil && tls.req.sni == "clien.net"
 
+# Block SOCKS proxy access to google.com:80
+- name: block google socks
+  action: block
+  expr: string(socks?.req?.addr) endsWith "google.com" && socks?.req?.port == 80
+
+# Block all china
+#- name: block CN geoip
+#  action: block
+#  expr: geoip(string(ip.dst), "cn")
+
+# Block all connections to a specific CIDR range
+- name: block cidr
+  action: block
+  expr: cidr(string(ip.dst), "192.168.0.0/24")
+
+# block all udp to 8.8.8.8
+- name: Block 8.8.8.8 UDP
+  action: block
+  expr: ip.dst == "8.8.8.8" && proto == "udp"
+
+# block all dns to google
+- name: Block Google DNS
+  action: drop
+  expr: dns != nil && !dns.qr && any(dns.questions, {.name == "www.google.com"})
+
+
+
+#
+# >>> block by protocol
+#
 # block all encrypted traffic
 - name: Block suspicious proxy traffic
   action: block
@@ -31,11 +64,6 @@
   action: drop
   expr: wireguard?.handshake_response?.receiver_index_matched == true
 
-# Block SOCKS proxy access to google.com:80
-- name: block google socks
-  action: block
-  expr: string(socks?.req?.addr) endsWith "google.com" && socks?.req?.port == 80
-
 # false positive: pretty low
 - name: Block WireGuard by packet_data
   action: block
@@ -45,35 +73,15 @@
   action: block
   expr: openvpn != nil && openvpn.rx_pkt_cnt + openvpn.tx_pkt_cnt > 50
 
-# Block all china
-#- name: block CN geoip
-#  action: block
-#  expr: geoip(string(ip.dst), "cn")
-
-# Block all connections to a specific CIDR range
-- name: block cidr
-  action: block
-  expr: cidr(string(ip.dst), "192.168.0.0/24")
-
-# block all udp to 8.8.8.8
-- name: Block 8.8.8.8 UDP
-  action: block
-  expr: ip.dst == "8.8.8.8" && proto == "udp"
-
-# block all dns to google
-- name: Block Google DNS
-  action: drop
-  expr: dns != nil && !dns.qr && any(dns.questions, {.name == "www.google.com"})
-
 # log sni mismatch
 - name: SNI mismatch
   log: true
   expr: tls?.req?.sni != nil && ip.dst not in lookup(tls.req.sni)
 
 # block all ssh connection
-- name: Block SSH
-  action: block
-  expr: ssh != nil
+#- name: Block SSH
+#  action: block
+#  expr: ssh != nil
 
 # blokcing quic to all http3
 #- name: Block quic.rocks QUIC
