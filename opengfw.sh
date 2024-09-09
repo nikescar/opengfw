@@ -10,4 +10,5 @@ if [[ -z $(which OpenGFW 2>/dev/null) ]]; then
 fi
 
 export OPENGFW_LOG_LEVEL=debug
-sudo OpenGFW -c config.yaml rules.yaml &
+cd ~/.local/share/opengfw
+yes $USER_PASSWD | sudo /home/$USER/go/bin/OpenGFW -c config.yaml rules.yaml
